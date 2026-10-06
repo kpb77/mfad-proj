@@ -19,10 +19,14 @@ def main():
     rotation_matrix = np.eye(3)
     cube_vertices, cube_edges = mk_cube()
     
-    def rotate_cube(axis):
+    def rotate_cube(axis, using_keys=False):
         nonlocal rotation_matrix
         angle = np.radians(15)
-        rotation_functions = {'x': rx, 'y': ry, 'z': rz}
+        if using_keys:
+            angle = np.radians(2)
+        if axis[0] == '-':
+            angle = angle * -1
+        rotation_functions = {'x': rx, 'y': ry, 'z': rz, '-x': rx, '-y': ry, '-z': rz}
         rotation_matrix = rotation_functions[axis](angle) @ rotation_matrix
 
     def reset_cube():
@@ -108,6 +112,16 @@ def main():
             matrix_row_label = font.render(row_text, True, (255, 255, 255))
             screen.blit(matrix_row_label, matrix_row_label.get_rect(centerx=control_center_x, top=matrix_display_y + 40 + (i * row_spacing)))
             
+        keys = pygame.key.get_pressed()
+        if keys[pygame.K_w] or keys[pygame.K_UP]:
+            rotate_cube('x', True)
+        elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
+            rotate_cube('-x', True)
+        elif keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            rotate_cube('y', True)
+        elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            rotate_cube('-y', True)
+
         pygame.display.flip()
         clock.tick(60)
         
