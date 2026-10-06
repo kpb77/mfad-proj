@@ -17,12 +17,13 @@ def main():
     font = pygame.font.SysFont("arial", 16, bold=True)
     
     rotation_matrix = np.eye(3)
+    rotating = False
     cube_vertices, cube_edges = mk_cube()
     
-    def rotate_cube(axis, using_keys=False):
+    def rotate_cube(axis, slow_rotation=False):
         nonlocal rotation_matrix
         angle = np.radians(15)
-        if using_keys:
+        if slow_rotation:
             angle = np.radians(2)
         if axis[0] == '-':
             angle = angle * -1
@@ -32,6 +33,13 @@ def main():
     def reset_cube():
         nonlocal rotation_matrix
         rotation_matrix = np.eye(3)
+    
+    def auto_rotate():
+        nonlocal rotating
+        if not rotating:
+            rotating = True
+        else:
+            rotating = False
 
     padding = 20
     panel_y = padding
@@ -52,8 +60,8 @@ def main():
     button_start_y = 100
     button_gap = 10
     
-    labels = ["Rotate +X (+15°)", "Rotate +Y (+15°)", "Rotate +Z (+15°)", "Reset"]
-    actions = [lambda: rotate_cube('x'), lambda: rotate_cube('y'), lambda: rotate_cube('z'), reset_cube]
+    labels = ["Rotate +X (+15°)", "Rotate +Y (+15°)", "Rotate +Z (+15°)", "Reset", "Auto rotate"]
+    actions = [lambda: rotate_cube('x'), lambda: rotate_cube('y'), lambda: rotate_cube('z'), reset_cube, auto_rotate]
     
     buttons = []
     for i in range(len(labels)):
@@ -121,6 +129,11 @@ def main():
             rotate_cube('y', True)
         elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             rotate_cube('-y', True)
+
+        if rotating:
+            rotate_cube('x', True)
+            rotate_cube('y', True)
+            rotate_cube('z', True)
 
         pygame.display.flip()
         clock.tick(60)
