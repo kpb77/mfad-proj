@@ -1,20 +1,29 @@
 import pygame
 import numpy as np
 import sys
-from math_engine import mk_cube, axes, rx, ry, rz, project
+from math_engine import axes, rx, ry, rz, project
 from ui_engine import Button
+from readshapes import load_shapes
 
 def main():
+    
+    shapes = load_shapes()
+    cube = shapes[0]
+    donut = shapes[1]
+    monkey = shapes[2]    
+        
     pygame.init()
     pygame.font.init()
     
-    screen_width = 980
-    screen_height = 700
+    screen_width = 1280
+    screen_height = 900
     screen = pygame.display.set_mode((screen_width, screen_height), pygame.SCALED)
-    pygame.display.set_caption("window")
+    pygame.display.set_caption("Orthogonal Matrices and 3D Graphics")
     clock = pygame.time.Clock()
     
     font = pygame.font.SysFont("arial", 16, bold=True)
+    medium_font = pygame.font.SysFont("calibri", 20, bold=True)
+    large_font = pygame.font.SysFont("urwgothic", 25, bold=False)
     
     rotation_matrix = np.eye(3)
     rotating = False
@@ -30,7 +39,7 @@ def main():
         rotation_functions = {'x': rx, 'y': ry, 'z': rz, '-x': rx, '-y': ry, '-z': rz}
         rotation_matrix = rotation_functions[axis](angle) @ rotation_matrix
 
-    def reset_cube():
+    def reset_rotation():
         nonlocal rotation_matrix
         rotation_matrix = np.eye(3)
     
@@ -79,10 +88,16 @@ def main():
                 is_running = False
             for button in buttons:
                 button.handle_event(event)
-                
-        projected_vertices = project(rotation_matrix @ cube_vertices, (center_x, center_y))
-        projected_axes = project(rotation_matrix @ axes, (center_x, center_y))
+            
+
+        if name == "Monkey":
+            projected_vertices = project(rotation_matrix @ active_vertices, (center_x, center_y), 480)
+            projected_axes = project(rotation_matrix @ axes, (center_x, center_y), 300)
         
+        else:
+            projected_vertices = project(rotation_matrix @ active_vertices, (center_x, center_y))
+            projected_axes = project(rotation_matrix @ axes, (center_x, center_y))
+            
         pygame.draw.rect(screen, (0, 0, 0), (viewport_x, panel_y, viewport_width, panel_height), border_radius=10)
         pygame.draw.rect(screen, (200, 200, 200), (viewport_x, panel_y, viewport_width, panel_height), width=2, border_radius=10)
         
@@ -94,8 +109,8 @@ def main():
             pygame.draw.line(screen, axis_colors[i], axis_origin, axis_end, 3)
             screen.blit(font.render(axis_names[i], True, axis_colors[i]), (axis_end[0] + 5, axis_end[1] - 5))
             
-        for edge in cube_edges:
-            pygame.draw.line(screen, (0, 206, 201), projected_vertices[edge[0]], projected_vertices[edge[1]], 2)
+        for edge in active_edges:
+            pygame.draw.line(screen, (0, 206, 201), projected_vertices[edge[0]], projected_vertices[edge[1]], 1)
             
         pygame.draw.rect(screen, (0, 0, 0), (control_x, panel_y, control_width, panel_height), border_radius=10)
         pygame.draw.rect(screen, (200, 200, 200), (control_x, panel_y, control_width, panel_height), width=2, border_radius=10)
@@ -106,8 +121,8 @@ def main():
         for button in buttons:
             button.draw(screen, font)
             
-        matrix_display_y = 415
-        matrix_header = font.render("Active Rotation Matrix (R):", True, (255, 255, 255))
+        matrix_display_y = 550
+        matrix_header = medium_font.render("Active Rotation Matrix (R):", True, (255, 255, 255))
         screen.blit(matrix_header, matrix_header.get_rect(centerx=control_center_x, top=matrix_display_y))
         
         row_spacing = 30
@@ -117,8 +132,8 @@ def main():
             value_3 = round(rotation_matrix[i, 2], 3)
             row_text = f"{value_1}    {value_2}    {value_3}"
             
-            matrix_row_label = font.render(row_text, True, (255, 255, 255))
-            screen.blit(matrix_row_label, matrix_row_label.get_rect(centerx=control_center_x, top=matrix_display_y + 40 + (i * row_spacing)))
+            matrix_row_label = large_font.render(row_text, True, (255, 255, 255))
+            screen.blit(matrix_row_label, matrix_row_label.get_rect(centerx=control_center_x, top=matrix_display_y + 50 + (i * row_spacing)))
             
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w] or keys[pygame.K_UP]:
