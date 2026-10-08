@@ -27,17 +27,9 @@ def main():
     
     rotation_matrix = np.eye(3)
     rotating = False
-    name = ""
+    cube_vertices, cube_edges = mk_cube()
     
-    shapes = [
-        ("Cube", cube),
-        ("Donut", donut),
-        ("Monkey", monkey)
-    ]
-    current_shape_idx = 0
-    active_vertices, active_edges = shapes[current_shape_idx][1]
-    
-    def rotate_object(axis, slow_rotation=False):
+    def rotate_cube(axis, slow_rotation=False):
         nonlocal rotation_matrix
         angle = np.radians(15)
         if slow_rotation:
@@ -53,13 +45,10 @@ def main():
     
     def auto_rotate():
         nonlocal rotating
-        rotating = not rotating
-
-    def toggle_object():
-        nonlocal name, current_shape_idx, active_vertices, active_edges
-        current_shape_idx = (current_shape_idx + 1) % len(shapes)
-        name, (active_vertices, active_edges) = shapes[current_shape_idx]
-        buttons[5].text = f"Object: {name}"
+        if not rotating:
+            rotating = True
+        else:
+            rotating = False
 
     padding = 20
     panel_y = padding
@@ -80,22 +69,8 @@ def main():
     button_start_y = 100
     button_gap = 10
     
-    labels = [
-        "Rotate +X (+15°)", 
-        "Rotate +Y (+15°)", 
-        "Rotate +Z (+15°)", 
-        "Reset", 
-        "Auto rotate", 
-        f"Object: {shapes[0][0]}"
-    ]
-    actions = [
-        lambda: rotate_object('x'), 
-        lambda: rotate_object('y'), 
-        lambda: rotate_object('z'), 
-        reset_rotation, 
-        auto_rotate, 
-        toggle_object
-    ]
+    labels = ["Rotate +X (+15°)", "Rotate +Y (+15°)", "Rotate +Z (+15°)", "Reset", "Auto rotate"]
+    actions = [lambda: rotate_cube('x'), lambda: rotate_cube('y'), lambda: rotate_cube('z'), reset_cube, auto_rotate]
     
     buttons = []
     for i in range(len(labels)):
@@ -162,19 +137,18 @@ def main():
             
         keys = pygame.key.get_pressed()
         if keys[pygame.K_w] or keys[pygame.K_UP]:
-            rotate_object('x', True)
-        if keys[pygame.K_s] or keys[pygame.K_DOWN]:
-            rotate_object('-x', True)
-        if keys[pygame.K_a] or keys[pygame.K_LEFT]:
-            rotate_object('y', True)
-        if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
-            rotate_object('-y', True)
-        
+            rotate_cube('x', True)
+        elif keys[pygame.K_s] or keys[pygame.K_DOWN]:
+            rotate_cube('-x', True)
+        elif keys[pygame.K_a] or keys[pygame.K_LEFT]:
+            rotate_cube('y', True)
+        elif keys[pygame.K_d] or keys[pygame.K_RIGHT]:
+            rotate_cube('-y', True)
 
         if rotating:
-            rotate_object('x', True)
-            rotate_object('y', True)
-            rotate_object('z', True)
+            rotate_cube('x', True)
+            rotate_cube('y', True)
+            rotate_cube('z', True)
 
         pygame.display.flip()
         clock.tick(60)
